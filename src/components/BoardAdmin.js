@@ -73,14 +73,14 @@ const BoardAdmin = () => {
         <h2 className="text-center">Lista de Usuários</h2>
         <ul className="list-group">
           {clients.map(client => (
-            <li key={client.id} className="list-group-item d-flex justify-content-between align-items-center">
+            <li key={client.id} className="list-group-item d-flex flex-column">
               <div>
                 <strong>{client.username}</strong>
                 <p className="mb-0">{client.email}</p>
               </div>
-              <div>
-                <button className="btn btn-primary btn-sm mr-2" onClick={() => editClient(client)}>Editar</button>
-                <button className="btn btn-danger btn-sm" onClick={() => deleteClient(client.id)}>Deletar</button>
+              <div className="d-flex align-items-center">
+                <button className="mt-2 mb-2 btn btn-primary btn-sm" onClick={() => editClient(client)}>Editar</button>
+                <button className="mt-2 mb-2 btn btn-danger btn-sm" onClick={() => deleteClient(client.id)}>Deletar</button>
               </div>
             </li>
           ))}

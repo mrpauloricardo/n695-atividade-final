@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Link } from "react-router-dom";
-import './App.css';
+import '../src/styles/App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import BoardAdmin from "./components/BoardAdmin";
-import BoardModerator from "./components/BoardModerator";
 import BoardUser from "./components/BoardUser";
 import Home from './components/Home';
 import Login from './components/Login';
 import Profile from "./components/Profile";
 import Register from './components/Register';
+import ThemeButton from './components/ThemeButton';
+import { ThemeProvider } from './components/ThemeContext';
 
 import EventBus from "./common/EventBus";
 import AuthService from './services/AuthService';
 
 function App() {
+  const [darkMode] = useState(false);
+  
   const [showModeratorBoard, setShowModeratorBoard] = useState(false);
   const [showAdminBoard, setShowAdminBoard] = useState(false);
   const [currentUser, setCurrentUser] = useState(undefined);
@@ -44,8 +48,9 @@ function App() {
   };
 
   return (
-    <div>
-      <div className="container">
+    <ThemeProvider>
+      <div className={`App ${darkMode ? 'theme-dark' : 'theme-light'}`}>
+      <div className='container'>
         <header className="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
           <div className="col-md-3 mb-2 mb-md-0">
             <a href={"/"} className="d-inline-flex link-body-emphasis text-decoration-none">Logo</a>
@@ -66,9 +71,7 @@ function App() {
 
           {currentUser ? (
             <div className="col-md-3 text-end">
-              <Link className='profile-name' to={"/profile"}>
-                {currentUser.username}
-              </Link>
+              <a href={"/profile"} className="profile-name">{currentUser.username}</a>
               <Link to={"login"}>
                 <button onClick={logout} type="button" className="btn-logout btn btn-primary">Sair</button>
               </Link>
@@ -86,6 +89,8 @@ function App() {
         )}
         </header>
 
+        <ThemeButton />
+
         <Routes>
           <Route exact path={"/"} element={<Home />} />
           <Route exact path={"/home"} element={<Home />} />
@@ -93,11 +98,12 @@ function App() {
           <Route exact path={"/register"} element={<Register />} />
           <Route exact path={"/profile"} element={<Profile />} />
           <Route exact path={"/user"} element={<BoardUser />} />
-          <Route exact path={"/mod"} element={<BoardModerator />} />
           <Route exact path={"/admin"} element={<BoardAdmin />} />
         </Routes>
       </div>
     </div>
+    </ThemeProvider>
+    
   );
 };
 

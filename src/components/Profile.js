@@ -4,6 +4,10 @@ import AuthService from "../services/AuthService";
 const Profile = () => {
   const currentUser = AuthService.getCurrentUser();
 
+  if (!currentUser) {
+    return <div className="container">Carregando...</div>;
+  }
+
   return (
     <div className="container">
       <header className="jumbotron">
@@ -20,7 +24,9 @@ const Profile = () => {
       <strong>Authorities:</strong>
       <ul>
         {currentUser.roles &&
-          currentUser.roles.map((role, index) => <li key={index}>{role}</li>)}
+          currentUser.roles.map((role, index) => (
+            <li key={index}>{typeof role === 'object' ? role.name : role}</li>
+          ))}
       </ul>
     </div>
   );

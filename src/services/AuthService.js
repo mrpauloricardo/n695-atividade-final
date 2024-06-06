@@ -33,11 +33,16 @@ const getCurrentUser = () => {
   return JSON.parse(localStorage.getItem("user"));
 };
 
+const updateCurrentUser = (user) => {
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
 const AuthService = {
   register,
   login,
   logout,
   getCurrentUser,
+  updateCurrentUser,
 }
 
 export default AuthService;
