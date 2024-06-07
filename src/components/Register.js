@@ -1,123 +1,78 @@
-import React, { useState, useRef } from "react";
-import Form from "react-validation/build/form";
-import Input from "react-validation/build/input";
-import CheckButton from "react-validation/build/button";
-import isEmail from 'validator/lib/isEmail';
-
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import AuthService from "../services/AuthService";
 
-const required = (value) => {
-  if (!value) {
-    return (
-      <div className="invalid-feedback d-block">
-        Campo obrigatório.
-      </div>
-    );
-  }
-};
-
-const validEmail = (value) => {
-  if (!isEmail(value)) {
-    return (
-      <div className="invalid-feedback d-block">
-        Este email não é válido.
-      </div>
-    );
-  }
-};
-
-const vusername = (value) => {
-  if (value.length < 3 || value.length > 20) {
-    return (
-      <div className="invalid-feedback d-block">
-        O nome de usuário deve possuir entre 3 e 20 caracteres.
-      </div>
-    );
-  }
-};
-
-const vpassword = (value) => {
-  if (value.length < 6 || value.length > 40) {
-    return (
-      <div className="invalid-feedback d-block">
-        A senha deve possuir entre 6 e 40 caracteres.
-      </div>
-    );
-  }
-};
+const validationSchema = yup.object().shape({
+  username: yup
+    .string()
+    .required('Campo obrigatório.')
+    .min(3, 'O nome de usuário deve possuir entre 3 e 20 caracteres.')
+    .max(20, 'O nome de usuário deve possuir entre 3 e 20 caracteres.'),
+  email: yup
+    .string()
+    .required('Campo obrigatório.')
+    .email('Este email não é válido.'),
+  password: yup
+    .string()
+    .required('Campo obrigatório.')
+    .min(6, 'A senha deve possuir entre 6 e 40 caracteres.')
+    .max(40, 'A senha deve possuir entre 6 e 40 caracteres.')
+});
 
 const Register = (props) => {
-  const form = useRef();
-  const checkBtn = useRef();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(validationSchema)
+  });
 
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [successful, setSuccessful] = useState(false);
   const [message, setMessage] = useState("");
 
-  const onChangeUsername = (e) => {
-    const username = e.target.value;
-    setUsername(username);
-  };
-
-  const onChangeEmail = (e) => {
-    const email = e.target.value;
-    setEmail(email);
-  };
-
-  const onChangePassword = (e) => {
-    const password = e.target.value;
-    setPassword(password);
-  };
-
-  const handleRegister = (e) => {
-    e.preventDefault();
-
+  const onSubmit = (data) => {
     setMessage("");
     setSuccessful(false);
 
-    form.current.validateAll();
+    AuthService.register(data.username, data.email, data.password).then(
+      (response) => {
+        setMessage(response.data.message);
+        setSuccessful(true);
+      },
+      (error) => {
+        const resMessage =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
 
-    if (checkBtn.current.context._errors.length === 0) {
-      AuthService.register(username, email, password).then(
-        (response) => {
-          setMessage(response.data.message);
-          setSuccessful(true);
-        },
-        (error) => {
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-              error.message ||
-              error.toString();
-
-          setMessage(resMessage);
-          setSuccessful(false);
-        }
-      );
-    }
+        setMessage(resMessage);
+        setSuccessful(false);
+      }
+    );
   };
 
   return (
     <div className="col-md-12">
       <div className="card card-container">
         <img src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="profile-img" className="profile-img-card" />
-        <Form onSubmit={handleRegister} ref={form}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           {!successful && (
             <div>
               <div className="form-group">
                 <label className="label" htmlFor="username">Nome de usuário</label>
-                <Input type="text" className="form-control" name="username" value={username} onChange={onChangeUsername} validations={[required, vusername]} />
+                <input type="text" className="form-control" name="username" {...register('username')} />
+                {errors.username && <div className="invalid-feedback d-block">{errors.username.message}</div>}
               </div>
               <div className="form-group">
                 <label className="label" htmlFor="email">Email</label>
-                <Input type="text" className="form-control" name="email" value={email} onChange={onChangeEmail} validations={[required, validEmail]} />
+                <input type="text" className="form-control" name="email" {...register('email')} />
+                {errors.email && <div className="invalid-feedback d-block">{errors.email.message}</div>}
               </div>
               <div className="form-group">
                 <label className="label" htmlFor="password">Senha</label>
-                <Input type="password" className="form-control" name="password" value={password} onChange={onChangePassword} validations={[required, vpassword]} />
+                <input type="password" className="form-control" name="password" {...register('password')} />
+                {errors.password && <div className="invalid-feedback d-block">{errors.password.message}</div>}
               </div>
               <div className="form-group">
                 <button className="btn-form btn btn-primary btn-block">Registrar</button>
@@ -132,8 +87,7 @@ const Register = (props) => {
               </div>
             </div>
           )}
-          <CheckButton style={{ display: "none" }} ref={checkBtn} />
-        </Form>
+        </form>
       </div>
     </div>
   );

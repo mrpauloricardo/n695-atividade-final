@@ -18,7 +18,7 @@ const ThemeButton = () => {
         </symbol>        
       </svg>
   
-      <div className="position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
+      <div className="bd-mode-toggle">
         <Button 
           variant="primary" 
           id="bd-theme" 

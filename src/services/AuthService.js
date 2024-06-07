@@ -24,9 +24,7 @@ const login = async (username, password) => {
 
 const logout = () => {
   localStorage.removeItem("user");
-  return axios.post("http://localhost:3000").then((response) => {
-    return response.data;
-  });
+  window.location.href = "http://localhost:3000/login";
 };
 
 const getCurrentUser = () => {

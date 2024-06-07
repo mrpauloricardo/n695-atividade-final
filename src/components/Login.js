@@ -1,84 +1,67 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Form from "react-validation/build/form";
-import Input from "react-validation/build/input";
-import CheckButton from "react-validation/build/button";
+import { useForm } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 import AuthService from "../services/AuthService";
 
-const required = (value) => {
-  if (!value) {
-    return (
-      <div className="invalid-feedback d-block">
-        Campo obrigatório.
-      </div>
-    );
-  }
-};
+const validationSchema = yup.object().shape({
+  username: yup
+    .string()
+    .required('Campo obrigatório.'),
+  password: yup
+    .string()
+    .required('Campo obrigatório.')
+});
 
 const Login = () => {
-  const form = useRef();
-  const checkBtn = useRef();
-  
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(validationSchema)
+  });
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  
+
   const navigate = useNavigate();
-  
-  const onChangeUsername = (e) => {
-    const username = e.target.value;
-    setUsername(username);
-  };
-  
-  const onChangePassword = (e) => {
-    const password = e.target.value;
-    setPassword(password);
-  };
-  
-  const handleLogin = (e) => {
-    e.preventDefault();
-  
+
+  const onSubmit = (data) => {
     setMessage("");
     setLoading(true);
-  
-    form.current.validateAll();
-  
-    if (checkBtn.current.context._errors.length === 0) {
-      AuthService.login(username, password).then(
-        () => {
-          navigate("/profile");
-          window.location.reload();
-        },
-        (error) => {
-          const resMessage =
+
+    AuthService.login(data.username, data.password).then(
+      () => {
+        navigate("/profile");
+        window.location.reload();
+      },
+      (error) => {
+        const resMessage =
           (error.response &&
-            error.response.data && 
+            error.response.data &&
             error.response.data.message) ||
-            error.message ||
-            error.toString();
-            setLoading(false);
-            setMessage(resMessage);
-        }
-      );
-    } else {
-      setLoading(false);
-    }
+          error.message ||
+          error.toString();
+
+        setLoading(false);
+        setMessage(resMessage);
+      }
+    );
   };
 
   return (
     <div className="col-md-12">
       <div className="card card-container">
-        <img src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="profile-img" className="profile-img-card"/>
-        <Form onSubmit={handleLogin} ref={form}>
+        <img src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="profile-img" className="profile-img-card" />
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="form-group">
             <label className="label" htmlFor="username">Nome de usuário</label>
-            <Input type="text" className="form-control" name="username" value={username} onChange={onChangeUsername} validations={[required]} />
+            <input type="text" className="form-control" name="username" {...register('username')} />
+            {errors.username && <div className="invalid-feedback d-block">{errors.username.message}</div>}
           </div>
           <div className="form-group">
             <label className="label" htmlFor="password">Senha</label>
-            <Input type="password" className="form-control" name="password" value={password} onChange={onChangePassword} validations={[required]} />
+            <input type="password" className="form-control" name="password" {...register('password')} />
+            {errors.password && <div className="invalid-feedback d-block">{errors.password.message}</div>}
           </div>
           <div className="form-group">
             <button className="btn-form btn btn-primary btn-block" disabled={loading}>
@@ -95,8 +78,7 @@ const Login = () => {
               </div>
             </div>
           )}
-          <CheckButton style={{ display: "none" }} ref={checkBtn} />
-        </Form>
+        </form>
       </div>
     </div>
   );
